@@ -1,0 +1,93 @@
+"""
+Error handler utilities.
+Provides a decorator and helper for consistent error handling across Lambda handlers.
+"""
+import json
+import traceback
+from functools import wraps
+from typing import Callable
+
+from src.utils.response_helper import error_response
+
+
+def handle_errors(func: Callable) -> Callable:
+    """
+    Decorator that wraps Lambda handler functions with consistent error handling.
+
+    Catches:
+        - ValueError → 400 Bad Request
+        - PermissionError → 403 Forbidden
+        - LookupError → 404 Not Found
+        - All other exceptions → 500 Internal Server Error
+
+    Usage:
+        @handle_errors
+        def handler(event, context):
+            ...
+    """
+    @wraps(func)
+    def wrapper(event, context):
+        try:
+            return func(event, context)
+        except ValueError as e:
+            return error_response(str(e), status_code=400)
+        except PermissionError as e:
+            return error_response(str(e), status_code=403)
+        except LookupError as e:
+            return error_response(str(e), status_code=404)
+        except Exception as e:
+            # Log the full traceback for debugging (visible in CloudWatch / serverless-offline)
+            traceback.print_exc()
+            return error_response(
+                "An unexpected internal error occurred.",
+                status_code=500,
+                details=str(e),
+            )
+
+    return wrapper
+
+
+def parse_request_body(event: dict) -> dict:
+    """
+    Safely parse JSON body from an API Gateway event.
+
+    Args:
+        event: The Lambda event dict.
+
+    Returns:
+        Parsed dict from request body.
+
+    Raises:
+        ValueError: If body is missing or not valid JSON.
+    """
+    body = event.get("body")
+    if not body:
+        raise ValueError("Request body is required but was not provided.")
+    try:
+        if isinstance(body, str):
+            return json.loads(body)
+        return body  # already parsed (e.g., in serverless-offline)
+    except json.JSONDecodeError:
+        raise ValueError("Request body must be valid JSON.")
+
+
+def get_query_param(event: dict, param_name: str, required: bool = False) -> str | None:
+    """
+    Extract a query string parameter from an API Gateway event.
+
+    Args:
+        event: The Lambda event dict.
+        param_name: The name of the query parameter.
+        required: If True, raises ValueError when param is missing.
+
+    Returns:
+        Parameter value string or None.
+
+    Raises:
+        ValueError: If required=True and the param is missing.
+    """
+    params = event.get("queryStringParameters") or {}
+    value = params.get(param_name)
+    if required and not value:
+        raise ValueError(f"Query parameter '{param_name}' is required.")
+    return value
