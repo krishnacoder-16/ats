@@ -1,9 +1,3 @@
-"""
-Lambda handler: POST /candidates
-
-Accepts candidate data, creates the candidate in Recruitee,
-and attaches them to the specified job via a candidacy.
-"""
 from src.services.recruitee_service import create_candidate
 from src.utils.response_helper import success_response
 from src.utils.error_handler import handle_errors, parse_request_body

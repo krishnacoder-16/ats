@@ -98,12 +98,7 @@ def _normalize_application_status(candidate: Dict[str, Any]) -> str:
 # Public service functions
 
 def get_jobs() -> List[Dict[str, str]]:
-    """
-    Fetch all job offers from Recruitee and return in standardised format.
 
-    Returns:
-        List of job dicts with keys: id, title, location, status, external_url.
-    """
     url = f"{RECRUITEE_BASE_URL}/offers"
     raw_offers = _paginate_get(url, result_key="offers")
 
