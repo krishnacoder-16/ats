@@ -1,0 +1,82 @@
+service: ats-integration-microservice
+
+# Serverless Framework version constraint 
+frameworkVersion: "3"
+useDotenv: true
+
+# Provider settings 
+provider:
+  name: aws
+  runtime: python3.11
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  timeout: 30
+
+  # Environment variables injected into every Lambda function
+  environment:
+    RECRUITEE_API_KEY: ${env:RECRUITEE_API_KEY, ''}
+    RECRUITEE_BASE_URL: ${env:RECRUITEE_BASE_URL, ''}
+
+# Lambda functions 
+functions:
+
+  # GET /jobs — fetch all job listings from Recruitee
+  getJobs:
+    handler: src/handlers/jobs_handler.handler
+    description: "Fetch all job offers from Recruitee ATS"
+    events:
+      - http:
+          path: /jobs
+          method: get
+          cors: true
+
+  # POST /candidates — create a candidate and attach to a job
+  createCandidate:
+    handler: src/handlers/candidates_handler.handler
+    description: "Create a candidate in Recruitee and link to a job"
+    events:
+      - http:
+          path: /candidates
+          method: post
+          cors: true
+
+  # GET /applications?job_id=<id> — list applications for a job
+  getApplications:
+    handler: src/handlers/applications_handler.handler
+    description: "Fetch all applications (candidacies) for a specific job"
+    events:
+      - http:
+          path: /applications
+          method: get
+          cors: true
+
+# Python packaging 
+package:
+  patterns:
+    - "!node_modules/**"
+    - "!.git/**"
+    - "!.env"
+    - "!tests/**"
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+
+# Plugins 
+plugins:
+  - serverless-offline         # Local development server
+  - serverless-python-requirements  # Bundle pip packages automatically
+  - serverless-dotenv-plugin   # Load .env file
+
+# Plugin configuration 
+custom:
+  # serverless-offline: emulates API Gateway locally
+  serverless-offline:
+    httpPort: 3000
+    host: localhost
+    noPrependStageInUrl: true  # URLs: /jobs instead of /dev/jobs
+
+  # serverless-python-requirements: packages all pip deps in requirements.txt
+  pythonRequirements:
+    dockerizePip: false          # Set to true if you need Linux-native packages
+    slim: true                   # Strip unnecessary files from packages
+    layer: false

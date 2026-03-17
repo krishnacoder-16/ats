@@ -1,7 +1,3 @@
-"""
-Error handler utilities.
-Provides a decorator and helper for consistent error handling across Lambda handlers.
-"""
 import json
 import traceback
 from functools import wraps
@@ -11,20 +7,7 @@ from src.utils.response_helper import error_response
 
 
 def handle_errors(func: Callable) -> Callable:
-    """
-    Decorator that wraps Lambda handler functions with consistent error handling.
 
-    Catches:
-        - ValueError → 400 Bad Request
-        - PermissionError → 403 Forbidden
-        - LookupError → 404 Not Found
-        - All other exceptions → 500 Internal Server Error
-
-    Usage:
-        @handle_errors
-        def handler(event, context):
-            ...
-    """
     @wraps(func)
     def wrapper(event, context):
         try:
@@ -48,18 +31,6 @@ def handle_errors(func: Callable) -> Callable:
 
 
 def parse_request_body(event: dict) -> dict:
-    """
-    Safely parse JSON body from an API Gateway event.
-
-    Args:
-        event: The Lambda event dict.
-
-    Returns:
-        Parsed dict from request body.
-
-    Raises:
-        ValueError: If body is missing or not valid JSON.
-    """
     body = event.get("body")
     if not body:
         raise ValueError("Request body is required but was not provided.")
@@ -72,20 +43,7 @@ def parse_request_body(event: dict) -> dict:
 
 
 def get_query_param(event: dict, param_name: str, required: bool = False) -> str | None:
-    """
-    Extract a query string parameter from an API Gateway event.
 
-    Args:
-        event: The Lambda event dict.
-        param_name: The name of the query parameter.
-        required: If True, raises ValueError when param is missing.
-
-    Returns:
-        Parameter value string or None.
-
-    Raises:
-        ValueError: If required=True and the param is missing.
-    """
     params = event.get("queryStringParameters") or {}
     value = params.get(param_name)
     if required and not value:
