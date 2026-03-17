@@ -1,0 +1,12 @@
+# Git: ignore sensitive files and generated artifacts
+.env
+__pycache__/
+*.pyc
+*.pyo
+.serverless/
+node_modules/
+.requirements/
+.requirements.zip
+dist/
+*.egg-info/
+.pytest_cache/

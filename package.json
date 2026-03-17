@@ -1,0 +1,17 @@
+{
+  "name": "ats-integration-microservice",
+  "version": "1.0.0",
+  "description": "ATS Integration Microservice — Recruitee + Serverless Framework",
+  "scripts": {
+    "start": "serverless offline",
+    "deploy": "serverless deploy",
+    "deploy:prod": "serverless deploy --stage prod"
+  },
+  "devDependencies": {
+    "serverless-offline": "^13.3.3",
+    "serverless-python-requirements": "^6.1.0"
+  },
+  "dependencies": {
+    "serverless-dotenv-plugin": "^6.0.0"
+  }
+}

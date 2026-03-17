@@ -1,0 +1,8 @@
+# Core HTTP library for calling Recruitee REST API
+requests==2.31.0
+
+# Load environment variables from .env file during local development
+python-dotenv==1.0.0
+
+# Optional: used if you add unit tests
+pytest==8.1.1
